@@ -4,7 +4,7 @@ from typing import Any, Type
 from sqlalchemy.orm import Session
 
 from src.conf import settings
-from src.cores.auth_schema import LoginForm, TokenPayload
+from src.schema.auth_schema import LoginForm, TokenPayload
 from src.db.redisdb import redis_client, store_token
 from src.handlers.check_email import is_valid_email
 from src.handlers.jwt_token import create_refresh_token, create_access_token, decode_token

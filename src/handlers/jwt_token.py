@@ -3,7 +3,7 @@ from datetime import datetime
 from jose import jwt, JWTError
 
 from src.conf import settings
-from src.cores.auth_schema import TokenPayload
+from src.schema.auth_schema import TokenPayload
 
 
 def create_access_token(data: dict, expire) -> str:

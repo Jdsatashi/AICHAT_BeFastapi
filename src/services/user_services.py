@@ -2,7 +2,7 @@ from typing import Type
 
 from sqlalchemy.orm import Session
 
-from src.cores.user_schema import UserCreate, UserSelfUpdate, ChangePassword
+from src.schema.user_schema import UserCreate, UserSelfUpdate, ChangePassword
 from src.handlers.pw_hash import hash_pass, verify_password
 from src.models.users import Users
 from src.utils.constant import pw_wrong, pw_not_match

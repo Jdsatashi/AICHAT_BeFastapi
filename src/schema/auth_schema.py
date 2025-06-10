@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from src.cores.user_schema import UserOut
+from src.schema.user_schema import UserOut
 
 
 class LoginForm(BaseModel):

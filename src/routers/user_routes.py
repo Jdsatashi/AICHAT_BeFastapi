@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
-from src.cores.user_schema import UserCreate, UserOut, UserSelfUpdate, ChangePassword
+from src.schema.user_schema import UserCreate, UserOut, UserSelfUpdate, ChangePassword
 from src.db.database import get_db
 from src.services.user_services import get_all_users, get_user_by_id, create_user, update_user_self, destroy_user, \
     change_password

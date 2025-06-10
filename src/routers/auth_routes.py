@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from src.cores.auth_schema import LoginForm, LoginResponse, RefreshTokenRequest, AccessTokenRequest
+from src.schema.auth_schema import LoginForm, LoginResponse, RefreshTokenRequest, AccessTokenRequest
 from src.db.database import get_db
 from src.services.auth_services import login, check_access_token
 from src.utils.constant import token_not_found, token_not_active, token_expired
