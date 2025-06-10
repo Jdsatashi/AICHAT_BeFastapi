@@ -1,12 +1,16 @@
+import asyncio
+
 from src.db.database import Base, engine
 
-def create_tables():
+
+async def create_tables():
     from src.models.chat import ChatTopic, ChatConversation, ChatMessage
     from src.models.users import Users
     from src.models.auth import RefreshToken
     
-    Base.metadata.create_all(bind=engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
 
 if __name__ == "__main__":
-    create_tables()
-    print("Database tables created successfully.")
+    asyncio.run(create_tables())

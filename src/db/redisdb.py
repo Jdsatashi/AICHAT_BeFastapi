@@ -1,12 +1,11 @@
-import redis
+import redis.asyncio as aioredis
 
 from src.conf.settings import REDIS_HOST, REDIS_PORT, REDIS_DB
 
-redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    db=REDIS_DB,
-    decode_responses=True
+redis_client = aioredis.from_url(
+    f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}",
+    encoding="utf-8",
+    decode_responses=True,
 )
 
 # Key for storing redis data

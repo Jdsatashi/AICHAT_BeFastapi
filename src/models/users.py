@@ -1,7 +1,8 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import Column, String, Boolean, DateTime, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.database import Base
 from src.utils.unow import now_vn
@@ -16,7 +17,13 @@ class Users(Base):
     password: Mapped[str] = mapped_column(String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_vn)
-
+    
+    conversations: Mapped[List["ChatConversation"]] = relationship(
+        "ChatConversation",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    
     def __init__(self, username: str, email: str, password: str, is_active: bool = True, **kwargs):
         super().__init__(**kwargs)
         self.username = username

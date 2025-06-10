@@ -5,6 +5,7 @@ from sqlalchemy import Integer, String, Text, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.database import Base
+from src.utils.gpt_model import gpt_default
 from src.utils.unow import now_vn
 
 # --- ChatTopic ---
@@ -14,7 +15,7 @@ class ChatTopic(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    model: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, default="")
+    model: Mapped[str] = mapped_column(String(50), nullable=False, default=gpt_default)
     system_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     first_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     

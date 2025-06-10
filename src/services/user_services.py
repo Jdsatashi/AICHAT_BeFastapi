@@ -1,18 +1,20 @@
 from typing import Type
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schema.user_schema import UserCreate, UserSelfUpdate, ChangePassword
-from src.handlers.pw_hash import hash_pass, verify_password
+from src.handlers.pw_hash import hash_pass
 from src.models.users import Users
+from src.schema.user_schema import UserCreate, UserSelfUpdate, ChangePassword
 from src.utils.constant import pw_wrong, pw_not_match
 
 
-def get_all_users(db: Session):
-    return db.query(Users).all()
+async def get_all_users(db: AsyncSession):
+    result = await db.execute(select(Users))
+    return result.scalars().all()
 
 
-def create_user(db: Session, user_data: UserCreate) -> Users:
+async def create_user(db: AsyncSession, user_data: UserCreate) -> Users:
     password = hash_pass(user_data.password)
 
     db_user = Users(
@@ -21,17 +23,18 @@ def create_user(db: Session, user_data: UserCreate) -> Users:
         password=password
     )
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
 
 
-def get_user_by_id(db: Session, user_id: int) -> Type[Users] | None:
-    return db.query(Users).filter(Users.id == user_id).first()
+async def get_user_by_id(db: AsyncSession, user_id: int) -> Type[Users] | None:
+    user = await db.get(Users, user_id)
+    return user
 
 
-def update_user_self(db: Session, user_id: int, user_data: UserSelfUpdate) -> Type[Users] | None:
-    user = db.query(Users).filter(Users.id == user_id).first()
+async def update_user_self(db: AsyncSession, user_id: int, user_data: UserSelfUpdate) -> Type[Users] | None:
+    user = await db.get(Users, user_id)
     if not user:
         return None
 
@@ -40,28 +43,28 @@ def update_user_self(db: Session, user_id: int, user_data: UserSelfUpdate) -> Ty
     if user_data.email:
         user.email = str(user_data.email)
 
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
 
-def destroy_user(db: Session, user_id: int) -> bool | None:
-    user = db.query(Users).filter(Users.id == user_id).first()
+async def destroy_user(db: AsyncSession, user_id: int) -> bool | None:
+    user = await db.get(Users, user_id)
     if not user:
         return None
     try:
-        db.delete(user)
-        db.commit()
+        await db.delete(user)
+        await db.commit()
 
         return True
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         print(f"Error deleting user: {e}")
         return False
 
 
-def change_password(db: Session, user_id: int, user_data: ChangePassword) -> str | None | bool:
-    user = db.query(Users).filter(Users.id == user_id).first()
+async def change_password(db: AsyncSession, user_id: int, user_data: ChangePassword) -> str | None | bool:
+    user = await db.get(Users, user_id)
     if not user:
         return None
     # check_pw = verify_password(user_data.old_password, user.password)
@@ -72,6 +75,6 @@ def change_password(db: Session, user_id: int, user_data: ChangePassword) -> str
         return pw_not_match
 
     user.password = hash_pass(user_data.new_password)
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return True
