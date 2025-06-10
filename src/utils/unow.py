@@ -6,7 +6,7 @@ from src.conf.settings import VN_TZ
     If `aware` is True, it returns an aware datetime object.
 """
 def now_vn(aware = False):
-    result = datetime.now(VN_TZ).replace(tzinfo=None)
+    result = datetime.now(VN_TZ)
     if aware:
         return result
     else:
