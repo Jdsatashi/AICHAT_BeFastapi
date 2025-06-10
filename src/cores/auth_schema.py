@@ -12,4 +12,6 @@ class LoginResponse(BaseModel):
     user: UserOut
     access_token: str
     refresh_token: str
-    
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str

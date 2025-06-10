@@ -4,14 +4,12 @@ from src.conf import settings
 from src.utils.unow import now_vn
 
 
-def create_access_token(data: dict) -> str:
-    expire = now_vn() + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+def create_access_token(data: dict, expire) -> str:
     to_encode = data.copy()
     to_encode.update({"exp": expire, "type": "access"})
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
-def create_refresh_token(data: dict) -> str:
-    expire = now_vn() + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAY)
+def create_refresh_token(data: dict, expire) -> str:
     to_encode = data.copy()
     to_encode.update({"exp": expire, "type": "refresh"})
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
