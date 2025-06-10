@@ -1,74 +1,66 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
-from sqlalchemy.orm import relationship
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.database import Base
 from src.utils.unow import now_vn
 
-
+# --- ChatTopic ---
 class ChatTopic(Base):
     __tablename__ = "chat_topics"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False, unique=True)
-    description = Column(Text(), nullable=True)
-    system_prompt = Column(Text(), nullable=True)
-    first_message = Column(Text(), nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    model: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, default="")
+    system_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    first_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_vn)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now_vn, onupdate=now_vn)
 
-    notes = Column(Text(), nullable=True)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=now_vn)
-    updated_at = Column(DateTime, default=now_vn, onupdate=now_vn)
-
-    # Foreign key relationships
-    conversations = relationship("ChatConversation", back_populates="topic")
-
-    def __init__(self, name: str, description: str = None, system_prompt: str = None, first_message: str = None,
-                 is_active: bool = True, **kwargs):
-        super().__init__(**kwargs)
-        self.name = name
-        self.description = description
-        self.system_prompt = system_prompt
-        self.first_message = first_message
-        self.is_active = is_active
+    conversations: Mapped[list["ChatConversation"]] = relationship(
+        "ChatConversation",
+        back_populates="topic",
+        cascade="all, delete-orphan"
+    )
 
 
+# --- ChatConversation ---
 class ChatConversation(Base):
     __tablename__ = "chat_conversations"
 
-    id = Column(Integer, primary_key=True, index=True)
-    topic_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    topic_id: Mapped[int] = mapped_column(ForeignKey("chat_topics.id", ondelete="SET NULL"), nullable=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_vn)
 
-    notes = Column(Text(), nullable=True)
-    created_at = Column(DateTime, default=now_vn)
-
-    # Foreign key relationships
-    topic = relationship("ChatTopic", back_populates="conversations")
-    user = relationship("Users", back_populates="conversations")
-    messages = relationship("ChatMessage", back_populates="conversation", cascade="all, delete")
-
-    def __init__(self, topic_id: int, user_id: int, notes: str = None, **kwargs):
-        super().__init__(**kwargs)
-        self.topic_id = topic_id
-        self.user_id = user_id
-        self.notes = notes
+    topic: Mapped[ChatTopic] = relationship("ChatTopic", back_populates="conversations")
+    user: Mapped["Users"] = relationship("Users", back_populates="conversations")
+    messages: Mapped[list["ChatMessage"]] = relationship(
+        "ChatMessage",
+        back_populates="conversation",
+        cascade="all, delete-orphan"
+    )
 
 
+# --- ChatMessage ---
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
-    id = Column(Integer, primary_key=True, index=True)
-    conversation_id = Column(Integer, nullable=False)
-    role = Column(String(50), nullable=False)  # e.g., 'user' or 'assistant'
-    content = Column(Text(), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    conversation_id: Mapped[int] = mapped_column(ForeignKey("chat_conversations.id", ondelete="CASCADE"), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(50), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_vn)
 
-    created_at = Column(DateTime, default=now_vn)
-
-    # Foreign  key relationships 
-    conversation = relationship("ChatConversation", back_populates="messages")
-
-    def __init__(self, conversation_id: int, role: str, content: str, **kwargs):
-        super().__init__(**kwargs)
-        self.conversation_id = conversation_id
-        self.role = role
-        self.content = content
+    conversation: Mapped[ChatConversation] = relationship(
+        "ChatConversation",
+        back_populates="messages"
+    )
