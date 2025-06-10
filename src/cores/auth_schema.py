@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 from src.cores.user_schema import UserOut
@@ -15,3 +17,13 @@ class LoginResponse(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+class AccessTokenRequest(BaseModel):
+    access_token: str
+    
+# Token payloads for access/refresh tokens
+class TokenPayload(BaseModel):
+    user_id: int
+    refresh_id: int | None = None
+    exp: int
+    type: Literal["access", "refresh"]
