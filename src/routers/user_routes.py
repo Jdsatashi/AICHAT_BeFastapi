@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db
+from src.schema.queries_params_schema import QueryParams, DataResponseModel
 from src.schema.user_schema import UserCreate, UserOut, UserSelfUpdate, ChangePassword
 from src.services.user_services import get_all_users, get_user_by_id, create_user, update_user_self, destroy_user, \
     change_password
@@ -12,9 +13,9 @@ from src.utils.constant import pw_wrong, pw_not_match
 user_router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@user_router.get("/", response_model=List[UserOut])
-async def read_users(db: AsyncSession = Depends(get_db)):
-    users = await get_all_users(db)
+@user_router.get("/", response_model=DataResponseModel[UserOut])
+async def read_users(params: QueryParams = Depends(), db: AsyncSession = Depends(get_db)):
+    users = await get_all_users(db, params)
     return users
 
 

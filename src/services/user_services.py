@@ -5,13 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.handlers.pw_hash import hash_pass
 from src.models.users import Users
+from src.schema.queries_params_schema import QueryParams
 from src.schema.user_schema import UserCreate, UserSelfUpdate, ChangePassword
+from src.services.generic_services import get_all
 from src.utils.constant import pw_wrong, pw_not_match
 
 
-async def get_all_users(db: AsyncSession):
-    result = await db.execute(select(Users))
-    return result.scalars().all()
+async def get_all_users(db: AsyncSession, params: QueryParams):
+    # result = await db.execute(select(Users))
+    return await get_all(db, Users, params)
 
 
 async def create_user(db: AsyncSession, user_data: UserCreate) -> Users:
