@@ -169,6 +169,6 @@ async def check_access_token(access_token: str, db: AsyncSession) -> str | None:
     # Check if access token exists in Redis
     redis_token = await redis_client.get(f"{store_token}:{token_decoded.refresh_id}")
     if not redis_token or access_token != redis_token:
-        return token_not_found
+        return f"{token_not_found}_or_{token_expired}"
 
     return None
