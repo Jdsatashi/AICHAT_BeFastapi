@@ -1,22 +1,25 @@
 from sqlalchemy import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.database import get_db
 from src.models import Permission, MODEL_REGISTRY
 from src.schema.perm_schema import AddPemRequest
+from src.schema.queries_params_schema import QueryParams
+from src.services.generic_services import get_all
 
 
-async def get_all_perms(db: AsyncSession):
-    perms = await db.execute(select(Permission))
-    return perms.scalars().all()
+async def get_perms(db: AsyncSession, params: QueryParams):
+    return await get_all(db, Permission, params)
+
 
 async def create_perm(db: AsyncSession, perm_data: AddPemRequest) -> Permission | str:
     is_valid, err = validate_perm_data(perm_data)
     if not is_valid:
         return err
-    perm_name = f"{perm_data.action}_{perm_data.model_name}_{perm_data.object_pk}"
+    perm_name = f"{perm_data.action}_{perm_data.model_name}"
+    if perm_data.object_pk:
+        perm_name += f"_{perm_data.object_pk}"
     result = await db.execute(select(exists().where(Permission.name == perm_name)))
-    
+
     if result.scalar():
         return f"Permission {perm_name} already exists."
     new_perm = Permission(
@@ -30,8 +33,8 @@ async def create_perm(db: AsyncSession, perm_data: AddPemRequest) -> Permission 
     await db.commit()
     await db.refresh(new_perm)
     return new_perm
-    
-    
+
+
 async def validate_perm_data(db: AsyncSession, perm_data: AddPemRequest) -> tuple[bool, str | None]:
     # Check if models String is valid
     if perm_data.model_name not in list(MODEL_REGISTRY.keys()):
