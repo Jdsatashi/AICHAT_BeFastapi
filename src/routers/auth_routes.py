@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schema.auth_schema import LoginForm, LoginResponse, RefreshTokenRequest, AccessTokenRequest
+from src.schema.auth_schema import LoginRequest, LoginOutput, RefreshTokenRequest, AccessTokenRequest
 from src.db.database import get_db
 from src.services.auth_services import login, check_access_token
 from src.utils.constant import token_not_found, token_not_active, token_expired
@@ -13,8 +13,9 @@ auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="authenticate")
 
 
-@auth_router.post("/login", response_model=LoginResponse)
-async def user_login(auth_data: LoginForm, db: AsyncSession = Depends(get_db)):
+@auth_router.post("/login", response_model=LoginOutput)
+async def user_login(auth_data: LoginRequest, db: AsyncSession = Depends(get_db)):
+    """" Login user with username or email and password """
     result = await login(db, auth_data)
     if isinstance(result, str):
         raise HTTPException(status_code=400, detail=result)
@@ -34,7 +35,7 @@ async def refresh_access_token(rf_token: RefreshTokenRequest, db: AsyncSession =
 
 @auth_router.post("/check-access")
 async def access_token_checking(token: AccessTokenRequest, db: AsyncSession = Depends(get_db)):
-    # Check if the access token is valid
+    """ Check if the access token is valid with token in request body """
     is_valid = await check_access_token(token.access_token, db)
     if isinstance(is_valid, str):
         raise HTTPException(status_code=400, detail=is_valid)
@@ -43,7 +44,7 @@ async def access_token_checking(token: AccessTokenRequest, db: AsyncSession = De
 
 @auth_router.get("/check-access")
 async def access_token_checking(token: Annotated[str, Depends(oauth2_scheme)], db: AsyncSession = Depends(get_db)):
-    # Check if the access token is valid
+    """ Check if the access token is valid with token in request header """
     is_valid = await check_access_token(token, db)
     if isinstance(is_valid, str):
         raise HTTPException(status_code=400, detail=is_valid)

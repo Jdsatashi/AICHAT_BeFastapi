@@ -11,15 +11,15 @@ from src.handlers.check_email import is_valid_email
 from src.handlers.jwt_token import create_refresh_token, create_access_token, decode_token
 from src.models.auth import RefreshToken
 from src.models.users import Users
-from src.schema.auth_schema import LoginForm, TokenPayload
+from src.schema.auth_schema import LoginRequest, TokenPayload
 from src.utils.constant import not_found, not_active, pw_not_match, token_not_found, token_not_active, token_expired, \
     token_invalid
 from src.utils.rand_str import random_string
 from src.utils.unow import now_vn
 
 
-async def login(db: AsyncSession, user_data: LoginForm) -> dict[str, str | Type[Users]] | str:
-    # App allow login with either username or email
+async def login(db: AsyncSession, user_data: LoginRequest) -> dict[str, str | Type[Users]] | str:
+    """ Function handle login with either username or email """
     # Get username field to check if it is an email or username
     username = user_data.username
     check_email = is_valid_email(username)
@@ -80,9 +80,9 @@ async def login(db: AsyncSession, user_data: LoginForm) -> dict[str, str | Type[
     }
 
 
-# Save Refresh Token to database
 async def save_refresh_token(db: AsyncSession, user_id: int, refresh_token: str,
                              expiration: Any) -> RefreshToken | None:
+    """ Save Refresh Token to database """
     try:
         # Create a new RefreshToken instance
         new_refresh_token = RefreshToken(
@@ -102,8 +102,8 @@ async def save_refresh_token(db: AsyncSession, user_id: int, refresh_token: str,
         raise e
 
 
-# Refresh new access token using refresh token
 async def refresh_access_token(db: AsyncSession, refresh_token: str) -> str | None:
+    """ Refresh new access token using refresh token """
     # Check if the refresh token is valid
     token = await check_refresh_token(db, refresh_token)
     if isinstance(token, str):
@@ -121,8 +121,8 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> str | No
     return new_access_token
 
 
-# Check if refresh token valid
 async def check_refresh_token(db: AsyncSession, refresh_token: str | int) -> RefreshToken | str:
+    """ Check if refresh token is valid """
     if isinstance(refresh_token, int):
         # If refresh_token is an integer, it's the token ID
         token = await db.execute(
@@ -146,8 +146,8 @@ async def check_refresh_token(db: AsyncSession, refresh_token: str | int) -> Ref
     return token
 
 
-# Check if access token valid
 async def check_access_token(access_token: str, db: AsyncSession) -> str | None:
+    """ Check if access token is valid """
     # Decode the access token
     token_decoded: TokenPayload = decode_token(access_token)
 

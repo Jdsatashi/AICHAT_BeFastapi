@@ -2,16 +2,16 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from src.schema.user_schema import UserOut
+from src.schema.user_schema import UserOutput
 
 
-class LoginForm(BaseModel):
+class LoginRequest(BaseModel):
     username: str = None
     password: str = None
     
     
-class LoginResponse(BaseModel):
-    user: UserOut
+class LoginOutput(BaseModel):
+    user: UserOutput
     access_token: str
     refresh_token: str
 
