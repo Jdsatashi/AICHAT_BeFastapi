@@ -1,8 +1,8 @@
 import os
 from zoneinfo import ZoneInfo
 
-from passlib.context import CryptContext
 from dotenv import load_dotenv
+from passlib.context import CryptContext
 
 load_dotenv()
 
@@ -29,3 +29,7 @@ JWT_REFRESH_TOKEN_EXPIRE_DAY = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", 7)
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
+
+# Admin Password
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
