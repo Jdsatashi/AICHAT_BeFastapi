@@ -6,7 +6,7 @@ Supports optional joins with custom response fields.
 import json
 from typing import Any, Dict, List, Optional, Type, Union
 
-from sqlalchemy import select, or_, and_, String, Text
+from sqlalchemy import select, or_, and_, String, Text, func
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
@@ -15,10 +15,10 @@ from src.schema.queries_params_schema import QueryParams
 
 
 async def get_all(
-    db: AsyncSession,
-    model: Type[Any],
-    params: QueryParams,
-    joins: Optional[List[Dict[str, Union[str, List[str]]]]] = None
+        db: AsyncSession,
+        model: Type[Any],
+        params: QueryParams,
+        joins: Optional[List[Dict[str, Union[str, List[str]]]]] = None
 ) -> Dict[str, Any]:
     """
     Fetch items of `model` with dynamic filtering, search, sorting, pagination.
@@ -105,6 +105,11 @@ async def get_all(
             col = getattr(model, fld)
             stmt = stmt.order_by(col.desc() if direction == 'desc' else col.asc())
 
+    # --- Count total records before pagination ---
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    count_res = await db.execute(count_stmt)
+    total = count_res.scalar_one()
+
     # --- Pagination ---
     offset = (params.page - 1) * params.limit
     stmt = stmt.offset(offset).limit(params.limit)
@@ -135,5 +140,4 @@ async def get_all(
                     ]
         data_list.append(data)
 
-    total = len(data_list)
     return {"data": data_list, "total": total, "page": params.page, "limit": params.limit}
