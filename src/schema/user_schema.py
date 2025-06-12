@@ -29,7 +29,7 @@ class ChangePassword(BaseModel):
 
 
 # Schema return json (response)
-class UserOut(BaseModel):
+class UserOutput(BaseModel):
     id: int
     username: str
     email: EmailStr

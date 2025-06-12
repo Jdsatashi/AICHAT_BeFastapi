@@ -1,6 +1,5 @@
 from typing import Type
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.handlers.pw_hash import hash_pass
@@ -11,7 +10,7 @@ from src.services.generic_services import get_all
 from src.utils.constant import pw_wrong, pw_not_match
 
 
-async def get_all_users(db: AsyncSession, params: QueryParams):
+async def get_users(db: AsyncSession, params: QueryParams):
     # result = await db.execute(select(Users))
     return await get_all(db, Users, params)
 
@@ -30,12 +29,12 @@ async def create_user(db: AsyncSession, user_data: UserCreate) -> Users:
     return db_user
 
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> Type[Users] | None:
+async def get_user(db: AsyncSession, user_id: int) -> Type[Users] | None:
     user = await db.get(Users, user_id)
     return user
 
 
-async def update_user_self(db: AsyncSession, user_id: int, user_data: UserSelfUpdate) -> Type[Users] | None:
+async def update_user(db: AsyncSession, user_id: int, user_data: UserSelfUpdate) -> Type[Users] | None:
     user = await db.get(Users, user_id)
     if not user:
         return None
@@ -50,7 +49,7 @@ async def update_user_self(db: AsyncSession, user_id: int, user_data: UserSelfUp
     return user
 
 
-async def destroy_user(db: AsyncSession, user_id: int) -> bool | None:
+async def delete_user(db: AsyncSession, user_id: int) -> bool | None:
     user = await db.get(Users, user_id)
     if not user:
         return None

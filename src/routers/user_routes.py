@@ -1,48 +1,45 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db
 from src.schema.queries_params_schema import QueryParams, DataResponseModel
-from src.schema.user_schema import UserCreate, UserOut, UserSelfUpdate, ChangePassword
-from src.services.user_services import get_all_users, get_user_by_id, create_user, update_user_self, destroy_user, \
-    change_password
+from src.schema.user_schema import UserCreate, UserOutput, UserSelfUpdate, ChangePassword
+from src.services.user_services import get_users, create_user, get_user, update_user, delete_user, change_password
 from src.utils.constant import pw_wrong, pw_not_match
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@user_router.get("/", response_model=DataResponseModel[UserOut])
-async def read_users(params: QueryParams = Depends(), db: AsyncSession = Depends(get_db)):
-    users = await get_all_users(db, params)
+@user_router.get("/", response_model=DataResponseModel[UserOutput])
+async def list_user(params: QueryParams = Depends(), db: AsyncSession = Depends(get_db)):
+    users = await get_users(db, params)
     return users
 
 
-@user_router.post("/", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-async def create_user_route(user: UserCreate, db: AsyncSession = Depends(get_db)):
+@user_router.post("/", response_model=UserOutput, status_code=status.HTTP_201_CREATED)
+async def add_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return await create_user(db, user)
 
 
-@user_router.get("/{user_id}", response_model=UserOut)
-async def read_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    user = await get_user_by_id(db, user_id)
+@user_router.get("/{user_id}", response_model=UserOutput)
+async def retrieve_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    user = await get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
-@user_router.put("/{user_id}", response_model=UserOut)
-async def self_update_user(user_id: int, user_data: UserSelfUpdate, db: AsyncSession = Depends(get_db)):
-    user = await update_user_self(db, user_id, user_data)
+@user_router.put("/{user_id}", response_model=UserOutput)
+async def edit_user(user_id: int, user_data: UserSelfUpdate, db: AsyncSession = Depends(get_db)):
+    user = await update_user(db, user_id, user_data)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
 @user_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await destroy_user(db, user_id)
+async def destroy_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    result = await delete_user(db, user_id)
     if result is None:
         raise HTTPException(status_code=404, detail="User not found")
     elif not result:
