@@ -7,7 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.database import get_db
 from src.services.auth_services import check_access_token
 
-EXEMPT_PATHS: Set[str] = {"/", "/comepass/api/v1/auth/login"}
+EXEMPT_PATHS: Set[str] = {
+    "/",
+    "/comepass/api/v1/auth/login",
+    "/comepass/api/v1/auth/refresh-token",
+    "/comepass/api/v1/auth/check-access"
+}
 
 
 async def user_auth(
