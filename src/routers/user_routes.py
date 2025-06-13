@@ -5,7 +5,7 @@ from src.db.database import get_db
 from src.schema.queries_params_schema import QueryParams, DataResponseModel
 from src.schema.user_schema import UserCreate, UserOutput, UserSelfUpdate, ChangePassword
 from src.services.user_services import get_users, create_user, get_user, update_user, delete_user, change_password
-from src.utils.constant import pw_wrong, pw_not_match
+from src.utils.err_msg import err_msg
 
 user_router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -32,7 +32,8 @@ async def retrieve_user(user_id: int, db: AsyncSession = Depends(get_db)):
 @user_router.put("/{user_id}", response_model=UserOutput)
 async def edit_user(user_id: int, user_data: UserSelfUpdate, db: AsyncSession = Depends(get_db)):
     user = await update_user(db, user_id, user_data)
-    if not user:
+    # Handle error 404
+    if user == err_msg.not_found:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
@@ -40,20 +41,21 @@ async def edit_user(user_id: int, user_data: UserSelfUpdate, db: AsyncSession = 
 @user_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def destroy_user(user_id: int, db: AsyncSession = Depends(get_db)):
     result = await delete_user(db, user_id)
-    if result is None:
+    # Handle error 404
+    if result == err_msg.not_found:
         raise HTTPException(status_code=404, detail="User not found")
-    elif not result:
-        raise HTTPException(status_code=500, detail="Error deleting user")
     return {"detail": "User deleted successfully"}
 
 
-@user_router.put("/{user_id}/change-password", status_code=status.HTTP_204_NO_CONTENT)
+@user_router.put("/{user_id}/change-password", status_code=status.HTTP_200_OK)
 async def change_password_user(user_id: int, change_data: ChangePassword, db: AsyncSession = Depends(get_db)):
     user = await change_password(db, user_id, change_data)
-    if user is None:
+    # Handle error 404
+    if user == err_msg.not_found:
         raise HTTPException(status_code=404, detail="User not found")
-    elif user == pw_wrong:
-        raise HTTPException(status_code=400, detail="Old password is incorrect")
-    elif user == pw_not_match:
-        raise HTTPException(status_code=400, detail="New password and confirmation do not match")
+    # Handle validation error
+    elif user == err_msg.pw_wrong:
+        raise HTTPException(status_code=400, detail=f"Old {err_msg.pw_wrong}")
+    elif user == err_msg.pw_not_match:
+        raise HTTPException(status_code=400, detail=f"New password and {err_msg.pw_not_match}")
     return {"detail": "Password changed successfully"}
