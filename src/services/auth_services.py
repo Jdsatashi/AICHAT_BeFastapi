@@ -12,8 +12,7 @@ from src.handlers.jwt_token import create_refresh_token, create_access_token, de
 from src.models.auth import RefreshToken
 from src.models.users import Users
 from src.schema.auth_schema import LoginRequest, TokenPayload
-from src.utils.constant import not_found, not_active, pw_not_match, token_not_found, token_not_active, token_expired, \
-    token_invalid
+from src.utils.err_msg import err_msg
 from src.utils.rand_str import random_string
 from src.utils.unow import now_vn
 
@@ -39,15 +38,15 @@ async def login(db: AsyncSession, user_data: LoginRequest) -> dict[str, str | Ty
 
     # Check if user exists
     if not user:
-        return not_found
+        return err_msg.not_found
 
     # Check if user is active
     if not user.is_active:
-        return not_active
+        return err_msg.inactive
 
     # Check if password matches
     if not user.check_pw(pw=user_data.password):
-        return pw_not_match
+        return err_msg.pw_wrong
 
     # Prepare tokens data
     token_data = {"user_id": user.id}
@@ -138,11 +137,11 @@ async def check_refresh_token(db: AsyncSession, refresh_token: str | int) -> Ref
     token = token.scalar_one_or_none()
     # Check if token exists and is active
     if not token:
-        return token_not_found
+        return err_msg.not_found
     elif not token.is_active:
-        return token_not_active
+        return err_msg.inactive
     elif token.expiration <= now_vn():
-        return token_expired
+        return err_msg.expired
     return token
 
 
@@ -153,13 +152,13 @@ async def check_access_token(access_token: str, db: AsyncSession) -> str | None:
 
     # Check if token is decoded successfully
     if not token_decoded:
-        return token_invalid
+        return err_msg.invalid
 
     # Check if token type is expired
     expired_at = token_decoded.exp
     exp_datetime = datetime.fromtimestamp(expired_at).replace(tzinfo=None)
     if exp_datetime < now_vn():
-        return token_expired
+        return err_msg.expired
 
     # Check if refresh_id exists in the token
     refresh = await check_refresh_token(db, int(token_decoded.refresh_id))
@@ -169,6 +168,6 @@ async def check_access_token(access_token: str, db: AsyncSession) -> str | None:
     # Check if access token exists in Redis
     redis_token = await redis_client.get(f"{store_token}:{token_decoded.refresh_id}")
     if not redis_token or access_token != redis_token:
-        return f"{token_not_found}_or_{token_expired}"
+        return f"{err_msg.not_found}_or_{err_msg.expired}"
 
     return None

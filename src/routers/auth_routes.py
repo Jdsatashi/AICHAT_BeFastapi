@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schema.auth_schema import LoginRequest, LoginOutput, RefreshTokenRequest, AccessTokenRequest
 from src.db.database import get_db
 from src.services.auth_services import login, check_access_token
-from src.utils.constant import token_not_found, token_not_active, token_expired
+from src.utils.err_msg import err_code
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="authenticate")
@@ -27,7 +27,7 @@ async def refresh_access_token(rf_token: RefreshTokenRequest, db: AsyncSession =
     from src.services.auth_services import refresh_access_token
     # Refresh the access token
     new_access_token = await refresh_access_token(db, rf_token.refresh_token)
-    if new_access_token in [token_not_found, token_not_active, token_expired]:
+    if new_access_token in list(err_code.keys()):
         raise HTTPException(status_code=400, detail=new_access_token)
 
     return {"access_token": new_access_token}
