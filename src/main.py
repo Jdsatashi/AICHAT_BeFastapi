@@ -27,4 +27,18 @@ def read_root():
     return {"Hello": "World"}
 
 
+@app.post("/")
+def test_error():
+    raise ValueError("-- This is the test error --")
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logging.exception(f"Unhandled error: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Unexpected Server Error"}
+    )
+
+
 app.include_router(routes.router, prefix="/comepass/api/v1")
