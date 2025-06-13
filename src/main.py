@@ -1,6 +1,8 @@
+import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
+from starlette.responses import JSONResponse
 
 from src.conf import settings
 from src.dependencies.auth import user_auth
