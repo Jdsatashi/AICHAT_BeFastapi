@@ -33,3 +33,6 @@ REDIS_DB = int(os.getenv("REDIS_DB", 0))
 # Admin Password
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+
+# OpenAI Secret Key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

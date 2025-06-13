@@ -21,7 +21,11 @@ class GPTModels:
     o4mini: str = "gpt-4o-mini"
     o4nano: str = "gpt-4o-nano"
 
-gpt_default: str = "gpt-4o"
-
 # Instantiate for easy attribute access
 gpt = GPTModels()
+
+gpt_dmodel: str = gpt.o4mini
+
+gpt_dtemp: float = 0.7 # Creative of response, from 0.0 to 1.0; 0.0 is deterministic - 1.0 is creative
+
+gpt_max_token: int = 728 # Token is a pieces of response; about 5 characters of a word is equal 1 token
