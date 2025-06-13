@@ -39,6 +39,6 @@ async def user_auth(
     if data is not None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=data,
+            detail="error access token: " + data,
             headers={"WWW-Authenticate": "Bearer"},
         )

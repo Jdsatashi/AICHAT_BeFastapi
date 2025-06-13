@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schema.auth_schema import LoginRequest, LoginOutput, RefreshTokenRequest, AccessTokenRequest
 from src.db.database import get_db
+from src.schema.auth_schema import LoginRequest, LoginOutput, RefreshTokenRequest, AccessTokenRequest
 from src.services.auth_services import login, check_access_token
 from src.utils.err_msg import err_code
 
@@ -28,7 +28,7 @@ async def refresh_access_token(rf_token: RefreshTokenRequest, db: AsyncSession =
     # Refresh the access token
     new_access_token = await refresh_access_token(db, rf_token.refresh_token)
     if new_access_token in list(err_code.keys()):
-        raise HTTPException(status_code=400, detail=new_access_token)
+        raise HTTPException(status_code=400, detail="refresh token " + new_access_token)
 
     return {"access_token": new_access_token}
 
@@ -38,7 +38,7 @@ async def access_token_checking(token: AccessTokenRequest, db: AsyncSession = De
     """ Check if the access token is valid with token in request body """
     is_valid = await check_access_token(token.access_token, db)
     if isinstance(is_valid, str):
-        raise HTTPException(status_code=400, detail=is_valid)
+        raise HTTPException(status_code=400, detail="error access token: " + is_valid)
     return {"detail": "Access token is valid"}
 
 
@@ -47,5 +47,5 @@ async def access_token_checking(token: Annotated[str, Depends(oauth2_scheme)], d
     """ Check if the access token is valid with token in request header """
     is_valid = await check_access_token(token, db)
     if isinstance(is_valid, str):
-        raise HTTPException(status_code=400, detail=is_valid)
+        raise HTTPException(status_code=400, detail="error access token: " + is_valid)
     return {"detail": "Access token is valid"}
