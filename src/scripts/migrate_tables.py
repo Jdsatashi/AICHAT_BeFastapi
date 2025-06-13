@@ -4,7 +4,7 @@ from src.db.database import Base, engine
 
 
 async def create_tables():
-    from src.models.chat import ChatTopic, ChatConversation, ChatMessage
+    from src.models.chat import ChatTopic, ChatMessage
     from src.models.users import Users
     from src.models.auth import RefreshToken
     

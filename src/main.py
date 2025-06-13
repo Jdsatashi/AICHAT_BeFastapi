@@ -20,7 +20,7 @@ app = FastAPI(
     title=settings.APP_NAME,
     debug=settings.DEBUG,
     lifespan=lifespan,
-    dependencies=[Depends(user_auth)],
+    # dependencies=[Depends(user_auth)],
 )
 
 

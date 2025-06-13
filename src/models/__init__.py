@@ -7,7 +7,7 @@ from src.models.users import Users
 from src.models.permissions import Permission
 from src.models.roles import Role
 from src.models.association import table_role_permissions, table_user_roles
-from src.models.chat import ChatTopic, ChatConversation, ChatMessage
+from src.models.chat import ChatTopic, ChatMessage
 
 
 MODEL_REGISTRY = {
@@ -16,7 +16,6 @@ MODEL_REGISTRY = {
     "Role": Role,
     "ChatTopic": ChatTopic,
     "ChatMessage": ChatMessage,
-    "ChatConversation": ChatConversation,
 }
 
 def get_model(name: str):

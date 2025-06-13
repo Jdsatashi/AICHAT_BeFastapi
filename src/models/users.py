@@ -18,9 +18,9 @@ class Users(Base):
     password: Mapped[str] = mapped_column(String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_vn)
-    
-    conversations: Mapped[List["ChatConversation"]] = relationship(
-        "ChatConversation",
+
+    messages: Mapped[List["ChatMessage"]] = relationship(
+        "ChatMessage",
         back_populates="user",
         cascade="all, delete-orphan"
     )

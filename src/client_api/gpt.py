@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 from openai import OpenAI
+from starlette.concurrency import run_in_threadpool
 
 from src.conf.settings import OPENAI_API_KEY
 
@@ -33,3 +34,16 @@ async def chat_completion(
         **kwargs
     )
     return resp.choices[0].message["content"]
+
+
+def message_to_gpt(messages: list[dict], model: str, temperature: float, max_tokens: int) -> str:
+    """
+    Gọi OpenAI ChatCompletion, trả về content của assistant (full response, non-streaming).
+    """
+    resp = gpt_client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens
+    )
+    return resp.choices[0].message.content
