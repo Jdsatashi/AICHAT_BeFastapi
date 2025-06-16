@@ -15,7 +15,9 @@ async def get_topics(db: AsyncSession, queries: QueryParams):
     """
         Function to fetching chat topics and searching by queries from the database.
     """
-    return await get_all(db, ChatTopic, queries)
+    testdata = await get_all(db, ChatTopic, queries)
+    print(testdata)
+    return testdata
 
 
 async def create_topic(db: AsyncSession, topic_data: TopicCreate):
@@ -63,7 +65,15 @@ async def get_messages(db: AsyncSession, queries: QueryParams):
     """
         Function to fetching chat conversations and searching by queries from the database.
     """
-    return await get_all(db, queries)
+    return await get_all(db, ChatMessage, queries)
+
+
+async def get_topic_messages(db: AsyncSession, queries: QueryParams, topic_id: int, user_id: int):
+    stmt = select(ChatMessage)
+    query = (stmt.filter(ChatMessage.topic_id == topic_id) if user_id == 0
+             else stmt.filter(ChatMessage.topic_id == topic_id, ChatMessage.user_id == user_id))
+    result = await get_all(db, ChatMessage, queries, external_query=query)
+    return result
 
 
 async def create_message(db: AsyncSession, conversation_data: ConversationData):

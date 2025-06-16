@@ -7,13 +7,13 @@ from src.db.database import get_db
 from src.routers.auth_routes import oauth2_scheme
 from src.schema.chat_schema import TopicOutput, TopicCreate, MessageCreate, ConversationData
 from src.schema.queries_params_schema import QueryParams, DataResponseModel
-from src.services.chat import get_topics, create_topic, create_message
+from src.services.chat import get_topics, create_topic, create_message, get_topic_messages
 
 chat_router = APIRouter(prefix="/chat-gpt")
 
-
-
 """ --- Topic router handler """
+
+
 @chat_router.get("/topic", response_model=DataResponseModel[TopicOutput])
 async def list_topic(db: AsyncSession = Depends(get_db), queries: QueryParams = Depends()):
     return await get_topics(db, queries)
@@ -26,12 +26,15 @@ async def add_topic(topic_data: TopicCreate, db: AsyncSession = Depends(get_db))
 
 
 """ --- Message router handler """
+
+
 @chat_router.get(path="/messages")
 async def list_message(db: AsyncSession = Depends(get_db), queries: QueryParams = Depends()):
     return
 
+
 @chat_router.post(path="/topic/{topic_id}/messages")
-async def add_message(token: Annotated[str, Depends(oauth2_scheme)], topic_id: int, 
+async def add_message(token: Annotated[str, Depends(oauth2_scheme)], topic_id: int,
                       message_data: MessageCreate, db: AsyncSession = Depends(get_db)):
     conversation = ConversationData(
         topic_id=topic_id,
@@ -43,3 +46,21 @@ async def add_message(token: Annotated[str, Depends(oauth2_scheme)], topic_id: i
     return {
         "assistant": response
     }
+
+
+@chat_router.get(path="/topic/{topic_id}/messages/{user_id}")
+async def list_specific_messages(
+        topic_id: int,
+        user_id: int,
+        db: AsyncSession = Depends(get_db),
+        queries: QueryParams = Depends()
+):
+    return await get_topic_messages(db, queries, topic_id, user_id)
+
+
+@chat_router.get(path="/topic/messages/")
+async def list_specific_messages(
+        db: AsyncSession = Depends(get_db),
+        queries: QueryParams = Depends()
+):
+    return await get_topic_messages(db, queries)
