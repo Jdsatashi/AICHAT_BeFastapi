@@ -18,7 +18,7 @@ async def user_login(auth_data: LoginRequest, db: AsyncSession = Depends(get_db)
     """" Login user with username or email and password """
     result = await login(db, auth_data)
     if isinstance(result, str):
-        raise HTTPException(status_code=400, detail=result)
+        raise HTTPException(status_code=400, detail="user " + result)
     return result
 
 
