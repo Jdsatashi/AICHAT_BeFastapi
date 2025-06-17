@@ -100,7 +100,7 @@ async def create_message(db: AsyncSession, conversation_data: ConversationData):
         select(ChatMessage)
         .where(ChatMessage.topic_id == topic.id)
         .order_by(desc(ChatMessage.created_at))
-        .limit(10)
+        .limit(topic.max_msg_retrieve * 2)
     )
     last_msgs = result.scalars().all()
     # Đảo lại cho thành thứ tự từ cũ → mới

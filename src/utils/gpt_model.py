@@ -29,3 +29,4 @@ gpt_dmodel: str = gpt.o4mini
 gpt_dtemp: float = 0.7 # Creative of response, from 0.0 to 1.0; 0.0 is deterministic - 1.0 is creative
 
 gpt_max_token: int = 728 # Token is a pieces of response; about 5 characters of a word is equal 1 token
+gpt_max_retrieve: int = 10 # Token is a pieces of response; about 5 characters of a word is equal 1 token

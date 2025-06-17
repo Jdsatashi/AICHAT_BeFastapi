@@ -5,7 +5,7 @@ from sqlalchemy import Integer, String, Text, Boolean, DateTime, ForeignKey, Flo
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.database import Base
-from src.utils.gpt_model import gpt_dtemp, gpt_dmodel, gpt_max_token
+from src.utils.gpt_model import gpt_dtemp, gpt_dmodel, gpt_max_token, gpt_max_retrieve
 from src.utils.unow import now_vn
 
 
@@ -16,11 +16,13 @@ class ChatTopic(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    
     model: Mapped[str] = mapped_column(String(50), nullable=False, default=gpt_dmodel)
     system_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     temperature: Mapped[Optional[float]] = mapped_column(Float, default=gpt_dtemp)
     max_token: Mapped[Optional[int]] = mapped_column(Integer, default=gpt_max_token)
-    first_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    max_msg_retrieve: Mapped[Optional[int]] = mapped_column(Integer, default=gpt_max_retrieve)
+    
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     origin_user: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=None)

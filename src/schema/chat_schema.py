@@ -6,10 +6,13 @@ from pydantic import BaseModel
 class TopicCreate(BaseModel):
     name: str
     description: Optional[str]
+
+    model: Optional[str]
     system_prompt: str
     temperature: float
     max_token: int
-    first_message: Optional[str]
+    max_msg_retrieve: Optional[int]
+    
     notes: Optional[str]
     origin_user: int
 
@@ -32,10 +35,11 @@ class TopicOutput(BaseModel):
     id: int
     name: str
     description: Optional[str]
+    model: str
     system_prompt: str
     temperature: float
     max_token: int
-    first_message: Optional[str]
+    max_msg_retrieve: int
     notes: Optional[str]
     origin_user: Optional[int]
 
