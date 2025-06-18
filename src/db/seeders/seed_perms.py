@@ -119,3 +119,4 @@ async def create_role_default(db: AsyncSession):
 
 if __name__ == "__main__":
     asyncio.run(seed_permissions())
+    asyncio.run(create_admin_perms())
