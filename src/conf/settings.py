@@ -12,10 +12,14 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_DIR = BASE_DIR.parent
 
+# App and uvicorn settings
 APP_NAME = os.getenv("APP_NAME", "FastAPI Application")
 HOST = os.getenv("HOST", "localhost")
 PORT = int(os.getenv("PORT", 8000))
 DEBUG = bool(os.getenv("DEBUG", True))
+WORKERS = int(os.getenv("UVICORN_WORKERS", 4))
+LOG_LEVEL = os.getenv("UVICORN_LOG_LEVEL", "info")
+RELOAD_ENABLED = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///")
 
