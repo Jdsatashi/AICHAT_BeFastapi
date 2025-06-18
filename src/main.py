@@ -6,6 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from src.conf import settings
+from src.conf.settings import ALLOW_ORIGIN
 from src.dependencies.auth import user_auth
 from src.routers import routes
 
@@ -17,12 +18,6 @@ async def lifespan(app: FastAPI):
     yield
 
 
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-
-
 app = FastAPI(
     title=settings.APP_NAME,
     debug=settings.DEBUG,
@@ -32,10 +27,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Danh sách các origins được phép
-    allow_credentials=True, # Cho phép gửi cookie, tiêu đề ủy quyền, v.v. với các yêu cầu CORS
-    allow_methods=["*"],    # Cho phép tất cả các phương thức HTTP (GET, POST, PUT, DELETE, v.v.)
-    allow_headers=["*"],    # Cho phép tất cả các tiêu đề HTTP
+    allow_origins=ALLOW_ORIGIN,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")

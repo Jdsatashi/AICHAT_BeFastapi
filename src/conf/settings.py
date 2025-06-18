@@ -1,10 +1,16 @@
+import json
 import os
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from passlib.context import CryptContext
 
 load_dotenv()
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_DIR = BASE_DIR.parent
 
 APP_NAME = os.getenv("APP_NAME", "FastAPI Application")
 HOST = os.getenv("HOST", "localhost")
@@ -36,3 +42,8 @@ ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
 # OpenAI Secret Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+with open(os.path.join(PROJECT_DIR, 'config.json')) as config_file:
+    config = json.load(config_file)
+
+ALLOW_ORIGIN = config.get("ALLOW_CORS", ["http://localhost:3000","http://127.0.0.1:3000",])
