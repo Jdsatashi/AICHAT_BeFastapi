@@ -5,8 +5,9 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db
-from src.schema.auth_schema import LoginRequest, LoginOutput, RefreshTokenRequest, AccessTokenRequest
-from src.services.auth_services import login, check_access_token
+from src.handlers.jwt_token import create_access_token
+from src.schema.auth_schema import LoginRequest, LoginOutput, RefreshTokenRequest, AccessTokenRequest, CheckRoleRequest
+from src.services.auth_services import login, check_access_token, check_user_role
 from src.utils.err_msg import err_code
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -49,3 +50,15 @@ async def access_token_checking(token: Annotated[str, Depends(oauth2_scheme)], d
     if isinstance(is_valid, str):
         raise HTTPException(status_code=400, detail="error access token: " + is_valid)
     return {"detail": "Access token is valid"}
+
+
+@auth_router.post("/check-role")
+async def check_role(token: Annotated[str, Depends(oauth2_scheme)], role_data: CheckRoleRequest, db: AsyncSession = Depends(get_db)):
+    role_valid = await check_user_role(db, token, role_data)
+    if isinstance(role_valid, str):
+        raise HTTPException(status_code=400, detail="error access token: " + role_valid)
+    data_dict = {"role_valid": role_valid}
+    decode_result = create_access_token(data_dict)
+    return {
+        "detail": decode_result
+    }

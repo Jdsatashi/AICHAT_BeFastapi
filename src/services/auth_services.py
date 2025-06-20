@@ -9,9 +9,10 @@ from src.conf import settings
 from src.db.redisdb import redis_client, store_token
 from src.handlers.check_email import is_valid_email
 from src.handlers.jwt_token import create_refresh_token, create_access_token, decode_token
+from src.models import Role
 from src.models.auth import RefreshToken
 from src.models.users import Users
-from src.schema.auth_schema import LoginRequest, TokenPayload
+from src.schema.auth_schema import LoginRequest, TokenPayload, CheckRoleRequest
 from src.utils.err_msg import err_msg
 from src.utils.rand_str import random_string
 from src.utils.unow import now_vn
@@ -50,7 +51,6 @@ async def login(db: AsyncSession, user_data: LoginRequest) -> dict[str, str | Ty
 
     # Prepare tokens data
     token_data = {"user_id": user.id}
-    access_expire = now_vn() + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_expire = now_vn() + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAY)
     seconds_expire = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
@@ -67,7 +67,7 @@ async def login(db: AsyncSession, user_data: LoginRequest) -> dict[str, str | Ty
 
     # Create access token
     token_data["refresh_id"] = new_rf.id
-    access_token = create_access_token(token_data, access_expire)
+    access_token = create_access_token(token_data)
     # Check if access token is created successfully
     await redis_client.set(f"{store_token}:{new_rf.id}", access_token, ex=seconds_expire)
 
@@ -145,7 +145,7 @@ async def check_refresh_token(db: AsyncSession, refresh_token: str | int) -> Ref
     return token
 
 
-async def check_access_token(access_token: str, db: AsyncSession) -> str | None:
+async def check_access_token(access_token: str, db: AsyncSession) -> str | TokenPayload:
     """ Check if access token is valid """
     # Decode the access token
     token_decoded: TokenPayload = decode_token(access_token)
@@ -170,4 +170,22 @@ async def check_access_token(access_token: str, db: AsyncSession) -> str | None:
     if not redis_token or access_token != redis_token:
         return f"{err_msg.not_found} or {err_msg.expired}"
 
-    return None
+    return token_decoded
+
+
+async def check_user_role(db: AsyncSession, access_token: str, role_data: CheckRoleRequest):
+    """ Function check user is equal role """
+    # Check access token
+    payload = await check_access_token(access_token, db)
+
+    if isinstance(payload, str):
+        return str
+
+    user_id = payload.user_id
+    stmt = select(Users).where(
+        Users.id == user_id,
+        Users.roles.any(Role.name == role_data.role)
+    )
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    return user is not None
