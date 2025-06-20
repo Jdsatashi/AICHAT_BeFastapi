@@ -36,7 +36,7 @@ async def user_auth(
     # Validate token
     data = await check_access_token(token, db)
 
-    if data is not None:
+    if isinstance(data, str):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="error access token: " + data,
