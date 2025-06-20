@@ -7,7 +7,7 @@ from src.db.database import get_db
 from src.routers.auth_routes import oauth2_scheme
 from src.schema.chat_schema import TopicOutput, TopicCreate, MessageCreate, ConversationData
 from src.schema.queries_params_schema import QueryParams, DataResponseModel
-from src.services.chat import get_topics, create_topic, create_message, get_topic_messages
+from src.services.chat import get_topics, create_topic, create_message, get_topic_messages, get_user_topics
 
 chat_router = APIRouter(prefix="/chat-gpt")
 
@@ -24,6 +24,10 @@ async def add_topic(topic_data: TopicCreate, db: AsyncSession = Depends(get_db))
     new_topic = await create_topic(db, topic_data)
     return new_topic
 
+
+@chat_router.get("/topic/user/{user_id}", response_model=DataResponseModel[TopicOutput])
+async def list_topic_by_user(user_id: str, db: AsyncSession = Depends(get_db), queries: QueryParams = Depends()):
+    return await get_user_topics(db, queries, user_id)
 
 """ --- Message router handler """
 

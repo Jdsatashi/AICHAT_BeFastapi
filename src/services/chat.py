@@ -15,9 +15,15 @@ async def get_topics(db: AsyncSession, queries: QueryParams):
     """
         Function to fetching chat topics and searching by queries from the database.
     """
-    testdata = await get_all(db, ChatTopic, queries)
-    print(testdata)
-    return testdata
+    return await get_all(db, ChatTopic, queries)
+
+
+async def get_user_topics(db: AsyncSession, queries: QueryParams, user_id: str):
+    """
+        Function to fetching chat topics of specific user and searching by queries from the database.
+    """
+    return await get_all(db, ChatTopic, queries,
+                         external_query=select(ChatTopic).filter(ChatTopic.origin_user == user_id))
 
 
 async def create_topic(db: AsyncSession, topic_data: TopicCreate):
