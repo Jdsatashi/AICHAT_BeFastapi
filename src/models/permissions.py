@@ -19,6 +19,8 @@ class Permission(Base):
     object_pk: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     model_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
+    depend_on: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, default=None)
+    
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_vn)
 
     def __init__(self, name: str, description: str, **kwargs):
