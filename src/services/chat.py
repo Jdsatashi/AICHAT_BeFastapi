@@ -74,7 +74,7 @@ async def get_messages(db: AsyncSession, queries: QueryParams):
     return await get_all(db, ChatMessage, queries)
 
 
-async def get_topic_messages(db: AsyncSession, queries: QueryParams, topic_id: int, user_id: int):
+async def get_topic_messages(db: AsyncSession, queries: QueryParams, topic_id: int, user_id: int = 0):
     stmt = select(ChatMessage)
     query = (stmt.filter(ChatMessage.topic_id == topic_id) if user_id == 0
              else stmt.filter(ChatMessage.topic_id == topic_id, ChatMessage.user_id == user_id))

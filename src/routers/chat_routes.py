@@ -69,6 +69,8 @@ async def list_specific_messages(
 
 @chat_router.get(path=RoutePaths.ChatMessage.list_by_topic_user)
 async def list_specific_messages(
+        topic_id: int,
+        user_id: int,
         db: AsyncSession = Depends(get_db),
         queries: QueryParams = Depends()
 ):
