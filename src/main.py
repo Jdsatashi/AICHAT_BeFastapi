@@ -10,6 +10,7 @@ from src.conf import settings
 from src.conf.settings import ALLOW_ORIGIN, HOST, PORT, WORKERS, LOG_LEVEL, RELOAD_ENABLED
 from src.dependencies.auth import user_auth
 from src.routers import routes
+from src.utils.api_path import RoutePaths
 
 
 @asynccontextmanager
@@ -53,7 +54,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-app.include_router(routes.router, prefix="/comepass/api/v1")
+app.include_router(routes.router, prefix=RoutePaths.API_PREFIX)
 
 if __name__ == "__main__":
     uvicorn.run(

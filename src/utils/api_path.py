@@ -1,6 +1,8 @@
 # api_path.py
 
 class RoutePaths:
+    API_PREFIX = "/comepass/api/v1"
+
     class Auth:
         init = "/auth"
         login = "/login"
