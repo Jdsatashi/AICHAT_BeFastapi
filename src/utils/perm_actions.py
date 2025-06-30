@@ -22,3 +22,10 @@ actions_methods = {
     actions.edit: ["PUT"],
     actions.destroy: ["DELETE"]
 }
+
+method_map = {
+    "GET": actions.read,
+    "POST": actions.add,
+    "PUT": actions.edit,
+    "DELETE": actions.destroy
+}
