@@ -5,23 +5,24 @@ from src.db.database import get_db
 from src.schema.queries_params_schema import QueryParams, DataResponseModel
 from src.schema.user_schema import UserCreate, UserOutput, UserSelfUpdate, ChangePassword
 from src.services.user_services import get_users, create_user, get_user, update_user, delete_user, change_password
+from src.utils.api_path import RoutePaths
 from src.utils.err_msg import err_msg
 
-user_router = APIRouter(prefix="/users", tags=["Users"])
+user_router = APIRouter(prefix=RoutePaths.Users.init, tags=["Users"])
 
 
-@user_router.get("/", response_model=DataResponseModel[UserOutput])
+@user_router.get(path=RoutePaths.Users.list, response_model=DataResponseModel[UserOutput])
 async def list_user(params: QueryParams = Depends(), db: AsyncSession = Depends(get_db)):
     users = await get_users(db, params)
     return users
 
 
-@user_router.post("/", response_model=UserOutput, status_code=status.HTTP_201_CREATED)
+@user_router.post(path=RoutePaths.Users.add, response_model=UserOutput, status_code=status.HTTP_201_CREATED)
 async def add_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return await create_user(db, user)
 
 
-@user_router.get("/{user_id}", response_model=UserOutput)
+@user_router.get(path=RoutePaths.Users.retrieve, response_model=UserOutput)
 async def retrieve_user(user_id: int, db: AsyncSession = Depends(get_db)):
     user = await get_user(db, user_id)
     if not user:
@@ -29,7 +30,7 @@ async def retrieve_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return user
 
 
-@user_router.put("/{user_id}", response_model=UserOutput)
+@user_router.put(path=RoutePaths.Users.edit, response_model=UserOutput)
 async def edit_user(user_id: int, user_data: UserSelfUpdate, db: AsyncSession = Depends(get_db)):
     user = await update_user(db, user_id, user_data)
     # Handle error 404
@@ -38,7 +39,7 @@ async def edit_user(user_id: int, user_data: UserSelfUpdate, db: AsyncSession = 
     return user
 
 
-@user_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@user_router.delete(path=RoutePaths.Users.delete, status_code=status.HTTP_204_NO_CONTENT)
 async def destroy_user(user_id: int, db: AsyncSession = Depends(get_db)):
     result = await delete_user(db, user_id)
     # Handle error 404
@@ -47,7 +48,7 @@ async def destroy_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return {"detail": "User deleted successfully"}
 
 
-@user_router.put("/{user_id}/change-password", status_code=status.HTTP_200_OK)
+@user_router.put(path=RoutePaths.Users.change_password, status_code=status.HTTP_200_OK)
 async def change_password_user(user_id: int, change_data: ChangePassword, db: AsyncSession = Depends(get_db)):
     user = await change_password(db, user_id, change_data)
     # Handle error 404
