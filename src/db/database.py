@@ -21,3 +21,7 @@ async def get_db():
         yield db
     finally:
         await db.close()
+        
+async def get_db_instance() -> AsyncSession:
+    db = AsyncSessionLocal()
+    return db
