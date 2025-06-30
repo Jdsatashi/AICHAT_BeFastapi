@@ -7,7 +7,7 @@ class TopicCreate(BaseModel):
     name: str
     description: Optional[str]
 
-    model: Optional[str]
+    model: Optional[str] = None
     system_prompt: str
     temperature: float
     max_token: int
