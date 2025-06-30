@@ -2,13 +2,13 @@ import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from src.conf import settings
 from src.conf.settings import ALLOW_ORIGIN, HOST, PORT, WORKERS, LOG_LEVEL, RELOAD_ENABLED
-from src.dependencies.auth import user_auth
+from src.dependencies.middlewares import PermissionMiddleware
 from src.routers import routes
 from src.utils.api_path import RoutePaths
 
@@ -34,6 +34,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(PermissionMiddleware)
 
 @app.get("/")
 def read_root():
