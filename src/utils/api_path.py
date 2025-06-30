@@ -44,3 +44,11 @@ route_model_map = {
     "/chat-gpt/messages": "ChatMessage",
     "/users": "Users",
 }
+
+route_model_pk_map = [
+    (r"/chat-gpt/topic$", "ChatTopic", None),
+    (r"/chat-gpt/messages$", "ChatMessage", None),
+    (r"/chat-gpt/messages/topic-(?P<topic_id>\d+)$", "ChatTopic", "topic_id"),
+    (r"/users$", "Users", None),
+    (r"/users/(?P<user_id>\d+)$", "Users", "user_id"),
+]
