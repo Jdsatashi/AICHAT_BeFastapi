@@ -3,12 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.client_api.gpt import message_to_gpt
 from src.handlers.jwt_token import decode_token
-from src.models import ChatTopic, ChatMessage
+from src.handlers.perm import create_all_perms, generate_perm
+from src.models import ChatTopic, ChatMessage, Permission
 from src.schema.auth_schema import TokenPayload
 from src.schema.chat_schema import TopicCreate, TopicUpdate, ConversationData
 from src.schema.queries_params_schema import QueryParams
 from src.services.generic_services import get_all
 from src.utils.err_msg import err_msg
+from src.utils.perm_actions import actions
 
 
 async def get_topics(db: AsyncSession, queries: QueryParams):
@@ -35,6 +37,22 @@ async def create_topic(db: AsyncSession, topic_data: TopicCreate):
     db.add(new_topic)
     await db.commit()
     await db.refresh(new_topic)
+    
+    topic_perms: list = await create_all_perms(ChatTopic.__name__, obj_id=new_topic.id, db=db)
+    
+    # Create permissions message to topic
+    for perm in topic_perms:
+        action_name = perm.split("_")[0]
+        if action_name in [actions.add, actions.edit]:
+            msg_perm: Permission = await generate_perm(
+                ChatMessage.__name__,
+                action=action_name,
+                obj_id=new_topic.id,
+                depend_on=perm,
+                db=db
+            )
+            db.add(msg_perm)
+    await db.commit()
     return new_topic
 
 
