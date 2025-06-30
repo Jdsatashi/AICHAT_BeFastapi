@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from src.conf.settings import ADMIN_PASSWORD, ADMIN_EMAIL
 from src.db.database import AsyncSessionLocal
+from src.handlers.perm import auto_create_perms
 from src.handlers.pw_hash import hash_pass
 from src.models import Permission, Role, MODEL_REGISTRY, Users
 from src.utils.perm_actions import actions_list, actions
@@ -70,18 +71,7 @@ async def create_model_perms(db: AsyncSession):
     try:
         # Loop to each model in the MODEL_REGISTRY
         for model_name in MODEL_REGISTRY:
-            # Nested loop to each action in actions_list
-            for action in actions_list:
-                # Create permission name and description
-                name = f"{action}_{model_name}"
-                description = f"{action.upper()} permission on {model_name}"
-                db.add(Permission(
-                    name=name,
-                    description=description,
-                    model_name=model_name,
-                ))
-        # Apply the changes to the database
-        await db.commit()
+            await auto_create_perms(model_name, db=db)
     except Exception as e:
         await db.rollback()
         print(f"❌ Error creating model permissions: {e}")
@@ -105,7 +95,7 @@ async def create_role_default(db: AsyncSession):
         # Admin: all_*
         admin.permissions = [p for p in all_perms if p.name.startswith(actions.all)]
         # Manager: read_* và actions_*
-        manager.permissions = [p for p in all_perms if p.name.startswith((actions.read, actions.actions))]
+        manager.permissions = [p for p in all_perms if p.name.startswith((actions.read, actions.add, actions.edit))]
         # Staff: only read_*
         # staff.permissions = [p for p in all_perms if p.name.startswith("read_")]
 
