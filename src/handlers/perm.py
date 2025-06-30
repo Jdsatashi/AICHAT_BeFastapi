@@ -4,7 +4,7 @@ from src.models import Permission
 from src.utils.perm_actions import actions_list
 
 
-async def auto_create_perms(model_name, obj_id = None, db: AsyncSession = None) -> list[str]:
+async def create_all_perms(model_name, obj_id = None, depend_on=None, db: AsyncSession = None) -> list[str]:
     """ Auto create permissions for the system. """
     all_perm_name = list()
     for action in actions_list:
