@@ -3,10 +3,12 @@ from typing import Type
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.handlers.pw_hash import hash_pass
+from src.models import Role
 from src.models.users import Users
 from src.schema.queries_params_schema import QueryParams
 from src.schema.user_schema import UserCreate, UserSelfUpdate, ChangePassword
 from src.services.generic_services import get_all
+from src.services.perm_services import create_main_perms
 from src.utils.err_msg import err_msg
 
 
@@ -26,10 +28,24 @@ async def create_user(db: AsyncSession, user_data: UserCreate) -> Users:
     )
     # Assign add user to db
     db.add(new_user)
-    # Commit change to db
+    # Flush to get user id before creating permissions and roles
+    await db.flush()
+
+    permissions = await create_main_perms(Users.__name__, new_user.id, db)
+ 
+    await db.flush()  # Để permissions có id nếu cần
+
+    new_role = Role(
+        name=f"{Users.__name__}_{new_user.id}",
+        description=f"Auto role for user {new_user.id}",
+        group=False,
+        is_active=True,
+        permissions=permissions
+    )
+    db.add(new_role)
+    await db.refresh(new_user, attribute_names=["roles"])
+    new_user.roles.append(new_role)
     await db.commit()
-    # Refresh to get new object with id in db
-    await db.refresh(new_user)
     return new_user
 
 
