@@ -31,7 +31,7 @@ async def create_user(db: AsyncSession, user_data: UserCreate) -> Users:
     # Flush to get user id before creating permissions and roles
     await db.flush()
 
-    permissions = await create_main_perms(Users.__name__, new_user.id, db)
+    permissions = await create_main_perms(db, Users.__name__, new_user.id)
  
     await db.flush()  # Để permissions có id nếu cần
 
