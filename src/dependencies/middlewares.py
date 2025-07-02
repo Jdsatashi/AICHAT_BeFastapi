@@ -158,8 +158,8 @@ def get_model_name_from_path(route_path: str) -> str | None:
 
 
 def check_all_perm(model_name: str, action: str, permissions) -> bool:
-    permission_all = get_perm_name(actions.all, model_name)
-    permission_group = get_perm_name(action, model_name)
+    permission_all = get_perm_name(model_name, actions.all)
+    permission_group = get_perm_name(model_name, action)
 
     if permission_all in permissions or permission_group in permissions:
         return True
