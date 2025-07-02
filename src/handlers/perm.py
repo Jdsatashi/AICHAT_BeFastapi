@@ -9,7 +9,7 @@ async def create_all_perms(model_name: str, obj_id=None, depend_on=None, db: Asy
     all_perm_name = list()
     for action in actions_list:
         # Create permission name and description
-        all_perm_name.append(get_perm_name(action, model_name, obj_id))
+        all_perm_name.append(get_perm_name(model_name, action, obj_id))
         if db is not None:
             perm = await generate_perm(model_name, action, obj_id, depend_on, db)
             db.add(perm)
@@ -17,7 +17,7 @@ async def create_all_perms(model_name: str, obj_id=None, depend_on=None, db: Asy
     return all_perm_name
 
 
-def get_perm_name(action: str, model_name: str, obj_id: int | None = None) -> str:
+def get_perm_name(model_name: str, action: str, obj_id: int | None = None) -> str:
     """ Get permission name by action and model name. """
     if obj_id is not None:
         return f"{action}_{model_name}_{obj_id}"
@@ -27,7 +27,7 @@ def get_perm_name(action: str, model_name: str, obj_id: int | None = None) -> st
 async def generate_perm(model_name: str, action: str, obj_id: int | None = None,
                         depend_on: str | None = None, db: AsyncSession = None) -> Permission:
     """ Create a single permission in the database. """
-    perm_name = get_perm_name(action, model_name, obj_id)
+    perm_name = get_perm_name(model_name, action, obj_id)
     description = f"{action.upper()} permission on {model_name}"
     if obj_id is not None or obj_id != "":
         description = f"{description} for object ID {obj_id}"
