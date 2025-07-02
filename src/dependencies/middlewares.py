@@ -8,7 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_403_FORBIDDEN
 
-from src.db.database import get_db, get_db_instance
+from src.db.database import get_db_instance
 from src.handlers.perm import get_perm_name
 from src.models import Users, Permission, Role
 from src.services.auth_services import check_access_token
