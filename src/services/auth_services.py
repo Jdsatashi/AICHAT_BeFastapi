@@ -159,7 +159,9 @@ async def check_access_token(access_token: str, db: AsyncSession) -> str | Token
     exp_datetime = datetime.fromtimestamp(expired_at).replace(tzinfo=None)
     if exp_datetime < now_vn():
         return err_msg.expired
-
+    
+    if token_decoded.refresh_id is None:
+        return err_msg.invalid
     # Check if refresh_id exists in the token
     refresh = await check_refresh_token(db, int(token_decoded.refresh_id))
     if isinstance(refresh, str):
