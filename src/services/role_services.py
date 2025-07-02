@@ -14,12 +14,7 @@ async def get_roles(db: AsyncSession, params: QueryParams):
 
 async def create_role(db: AsyncSession, role_data: RoleCreate):
     """ Create a new role in the database."""
-    new_role = Role(
-        name=role_data.name,
-        description=role_data.description,
-        permissions=role_data.permissions,
-        group=role_data.group,
-    )
+    new_role = Role(**role_data.model_dump())
     db.add(new_role)
     await db.commit()
     await db.refresh(new_role)
