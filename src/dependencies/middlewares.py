@@ -167,12 +167,11 @@ def check_all_perm(model_name: str, action: str, permissions) -> bool:
     return False
 
 
-async def get_permission_depend_on(permission_name: str) -> str | None:
-    async with get_db() as session:
-        result = await session.execute(
-            Permission.__table__.select().where(Permission.name == permission_name)
-        )
-        perm = result.fetchone()
-        if perm and perm.depend_on:
-            return perm.depend_on
+async def get_permission_depend_on(db, permission_name: str) -> str | None:
+    result = await db.execute(
+        select(Permission).where(Permission.name == permission_name)
+    )
+    perm = result.scalar_one_or_none()
+    if perm and perm.depend_on:
+        return perm.depend_on
     return None
