@@ -15,6 +15,13 @@ actions_list = [
     actions.destroy
 ]
 
+actions_main = [
+    actions.read,
+    actions.add,
+    actions.edit,
+    actions.destroy
+]
+
 actions_methods = {
     actions.all: ["GET", "POST", "PUT", "DELETE"],
     actions.read: ["GET"],
