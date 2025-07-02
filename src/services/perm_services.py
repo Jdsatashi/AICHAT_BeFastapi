@@ -1,10 +1,12 @@
 from sqlalchemy import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.handlers.perm import get_perm_name
 from src.models import Permission, MODEL_REGISTRY
 from src.schema.perm_schema import AddPemRequest
 from src.schema.queries_params_schema import QueryParams
 from src.services.generic_services import get_all
+from src.utils.perm_actions import actions_main, actions
 
 
 async def get_perms(db: AsyncSession, params: QueryParams):
@@ -20,13 +22,13 @@ async def create_perm(db: AsyncSession, perm_data: AddPemRequest) -> Permission 
     perm_name = f"{perm_data.action}_{perm_data.model_name}"
     if perm_data.object_pk:
         perm_name += f"_{perm_data.object_pk}"
-    
+
     # Check if the permission already exists
     result = await db.execute(select(exists().where(Permission.name == perm_name)))
     # If the permission already exists, return an error message
     if result.scalar():
         return f"Permission {perm_name} already exists."
-    
+
     # Create a new permission
     new_perm = Permission(
         name=perm_name,
@@ -35,7 +37,7 @@ async def create_perm(db: AsyncSession, perm_data: AddPemRequest) -> Permission 
         object_pk=perm_data.object_pk,
         model_name=perm_data.model_name
     )
-    
+
     db.add(new_perm)
     # Commit changes and refresh data
     await db.commit()
@@ -58,3 +60,20 @@ async def validate_perm_data(db: AsyncSession, perm_data: AddPemRequest) -> tupl
         if obj is None:
             return False, f"Model {model_name} does not have a primary key named {perm_data.object_pk}."
     return True, None
+
+
+async def create_main_perms(db: AsyncSession, model_name: str, obj_id: int) -> list[Permission]:
+    """ Create main permissions for all models in the registry."""
+    permissions = []
+    for action in actions_main:
+        perm_name = get_perm_name(model_name, action, obj_id)
+        perm = Permission(
+            name=perm_name,
+            description=f"{action.capitalize()} permission for object pk {obj_id}",
+            object_pk=obj_id,
+            model_name="Users",
+        )
+        db.add(perm)
+        if action != actions.destroy:
+            permissions.append(perm)
+    return permissions
