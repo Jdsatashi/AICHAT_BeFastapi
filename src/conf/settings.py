@@ -20,7 +20,7 @@ DEBUG = bool(os.getenv("DEBUG", True))
 WORKERS = int(os.getenv("UVICORN_WORKERS", 4))
 LOG_LEVEL = os.getenv("UVICORN_LOG_LEVEL", "info")
 RELOAD_ENABLED = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
-MIDDLEWARE = bool(os.getenv("MIDDLEWARE", True))
+MIDDLEWARE = os.getenv("MIDDLEWARE", "false").lower() == "true"
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///")
 
