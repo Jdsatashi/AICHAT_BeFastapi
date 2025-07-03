@@ -20,6 +20,7 @@ class RoutePaths:
         add = "/messages/topic-{topic_id}"
         list_by_topic = "/messages/topic-{topic_id}"
         list_by_topic_user = "/messages/topic-{topic_id}/user-{user_id}"
+        socket = "/ws/topic-{topic_id}"
     class Users:
         init = "/users"
         list = "/"
