@@ -1,3 +1,5 @@
+from typing import Literal
+
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -61,7 +63,8 @@ async def create_topic(db: AsyncSession, topic_data: TopicCreate):
         )
         user_role = result.scalar_one_or_none()
 
-        add_perms = [topic_perm for topic_perm in topic_perms if topic_perm.name.split("_")[0] in [actions.read, actions.add]]
+        add_perms = [topic_perm for topic_perm in topic_perms if
+                     topic_perm.name.split("_")[0] in [actions.read, actions.add]]
         # Create permissions message to topic
         for perm in topic_perms:
             action_name = perm.name.split("_")[0]
@@ -139,35 +142,16 @@ async def create_message(db: AsyncSession, conversation_data: ConversationData):
     payload: TokenPayload = decode_token(conversation_data.token)
 
     # Get topic
-    topic: ChatTopic = await db.get(ChatTopic, conversation_data.topic_id)
+    topic: ChatTopic | None = await db.get(ChatTopic, conversation_data.topic_id)
     if topic is None:
         return "topic " + err_msg.not_found
-    msg = ChatMessage(
-        user_id=payload.user_id,
-        topic_id=topic.id,
-        role="user",
-        content=conversation_data.content
-    )
-    db.add(msg)
-    messages = []
-    if topic.system_prompt:
-        messages.append({"role": "system", "content": topic.system_prompt})
 
-    result = await db.execute(
-        select(ChatMessage)
-        .where(ChatMessage.topic_id == topic.id)
-        .order_by(desc(ChatMessage.created_at))
-        .limit(topic.max_msg_retrieve * 2)
-    )
-    last_msgs = result.scalars().all()
-    # Đảo lại cho thành thứ tự từ cũ → mới
-    last_msgs.reverse()
+    # Create message by user
+    msg = await create_message_socket(db, topic.id, payload.user_id, conversation_data.content, "user")
+    await db.refresh(msg)
 
-    # messages.append({"role": last_msgs, "content": conversation_data.content})
-    for m in last_msgs:
-        messages.append({"role": m.role, "content": m.content})
+    messages = await get_recent_msg(db, topic)
 
-    print(messages)
     assistant_content = message_to_gpt(
         messages=messages,
         model=topic.model,
@@ -175,16 +159,40 @@ async def create_message(db: AsyncSession, conversation_data: ConversationData):
         max_tokens=topic.max_token
     )
 
-    assistant_msg = ChatMessage(
-        user_id=payload.user_id,
-        topic_id=topic.id,
-        role="assistant",
-        content=assistant_content
-    )
-    db.add(assistant_msg)
-
-    await db.commit()
-    await db.refresh(assistant_msg)
-    await db.refresh(msg)
+    await create_message_socket(db, topic.id, payload.user_id, assistant_content, "assistant")
 
     return assistant_content
+
+
+async def get_recent_msg(db: AsyncSession, topic: ChatTopic):
+    """ Function get recent message of topic """
+    messages = []
+    if topic.system_prompt:
+        messages.append({"role": "system", "content": topic.system_prompt})
+    # Query recent messages with limit
+    result = await db.execute(
+        select(ChatMessage)
+        .where(ChatMessage.topic_id == topic.id)
+        .order_by(desc(ChatMessage.created_at))
+        .limit(topic.max_msg_retrieve * 2)
+    )
+    last_msgs = result.scalars().all()
+    # Reverse response of database
+    last_msgs.reverse()
+    for m in last_msgs:
+        messages.append({"role": m.role, "content": m.content})
+    return messages
+
+
+async def create_message_socket(db: AsyncSession, topic_id: int, user_id: int, content: str,
+                                role: Literal["user", "assistant"]):
+    """ Function to create message by socket """
+    msg = ChatMessage(
+        user_id=user_id,
+        topic_id=topic_id,
+        role=role,
+        content=content
+    )
+    db.add(msg)
+    await db.commit()
+    return msg
