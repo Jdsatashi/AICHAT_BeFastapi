@@ -20,6 +20,7 @@ DEBUG = bool(os.getenv("DEBUG", True))
 WORKERS = int(os.getenv("UVICORN_WORKERS", 4))
 LOG_LEVEL = os.getenv("UVICORN_LOG_LEVEL", "info")
 RELOAD_ENABLED = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
+MIDDLEWARE = bool(os.getenv("MIDDLEWARE", True))
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///")
 
@@ -50,4 +51,4 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 with open(os.path.join(PROJECT_DIR, 'config.json')) as config_file:
     config = json.load(config_file)
 
-ALLOW_ORIGIN = config.get("ALLOW_CORS", ["http://localhost:3000","http://127.0.0.1:3000",])
+ALLOW_ORIGIN = config.get("ALLOW_CORS", ["http://localhost:3000", "http://127.0.0.1:3000", ])
