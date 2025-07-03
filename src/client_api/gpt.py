@@ -1,9 +1,9 @@
 from typing import List, Dict
 
 from openai import OpenAI
-from starlette.concurrency import run_in_threadpool
 
 from src.conf.settings import OPENAI_API_KEY
+from src.utils.gpt_model import gpt_dmodel, gpt_dtemp, gpt_max_token
 
 gpt_client = OpenAI(
     api_key=OPENAI_API_KEY,
@@ -38,7 +38,7 @@ async def chat_completion(
 
 def message_to_gpt(messages: list[dict], model: str, temperature: float, max_tokens: int) -> str:
     """
-    Gọi OpenAI ChatCompletion, trả về content của assistant (full response, non-streaming).
+    Call api and get full response (non-streaming).
     """
     resp = gpt_client.chat.completions.create(
         model=model,
@@ -47,3 +47,15 @@ def message_to_gpt(messages: list[dict], model: str, temperature: float, max_tok
         max_tokens=max_tokens
     )
     return resp.choices[0].message.content
+
+
+def message_to_gpt_stream(messages: list[dict], model: str = gpt_dmodel, temperature: float = gpt_dtemp,
+                          max_tokens: int = gpt_max_token):
+    """ Call api and get response in streaming mode (response by chunk). """
+    return gpt_client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        stream=True
+    )
