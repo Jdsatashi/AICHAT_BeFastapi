@@ -7,7 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from src.conf import settings
-from src.conf.settings import ALLOW_ORIGIN, HOST, PORT, WORKERS, LOG_LEVEL, RELOAD_ENABLED
+from src.conf.settings import ALLOW_ORIGIN, HOST, PORT, WORKERS, LOG_LEVEL, RELOAD_ENABLED, MIDDLEWARE
 from src.dependencies.middlewares import PermissionMiddleware
 from src.routers import routes
 from src.utils.api_path import RoutePaths
@@ -35,7 +35,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(PermissionMiddleware)
+if MIDDLEWARE:
+    app.add_middleware(PermissionMiddleware)
 
 @app.get("/")
 def read_root():
